@@ -18,8 +18,6 @@ export const SearchBar = ({ onSubmit }) => {
     setInputValue('');
   };
 
-  const handleFormInput = e => setInputValue(e.target.value);
-
   return (
     <SearchBarContainer>
       <SearchForm onSubmit={handleFormSubmit}>
@@ -30,7 +28,7 @@ export const SearchBar = ({ onSubmit }) => {
           autoComplete="off"
           autoFocus
           placeholder="Search images and photos"
-          onChange={handleFormInput}
+          onChange={e => setInputValue(e.target.value)}
         />
         <IconContext.Provider value={{ size: '20px' }}>
           <SearchFormButton type="submit">

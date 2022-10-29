@@ -14,11 +14,7 @@ export class ImagesLoadService {
         return { id, largeImageURL, tags, webformatURL };
       }
     );
-
-    const normalizedResponse = {};
-    normalizedResponse.total = response.total;
-    normalizedResponse.hits = filteredHits;
-    return normalizedResponse;
+    return { total: response.total, hits: filteredHits };
   }
 
   async requestImages() {
