@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Notiflix from 'notiflix';
 import { SearchBar } from '../SearchBar/SearchBar';
 import { LoadMoreBtn } from '../Button/Button';
@@ -15,35 +15,26 @@ export const App = () => {
   const [status, setStatus] = useState('idle');
   const [userRequest, setUserRequest] = useState('');
   const [totalImages, setTotalImages] = useState(null);
-  const [, setPage] = useState(1);
-
-  const isRequestNew = useRef(false);
-  const isPageChanged = useRef(false);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
-    if (isRequestNew.current || isPageChanged.current) {
-      imagesRequest();
-      isRequestNew.current = false;
-      isPageChanged.current = false;
-      return;
-    }
-  });
+    if (userRequest === '' || imagesLoader.page !== page) return;
 
-  const imagesRequest = async () => {
-    try {
-      setStatus('pending');
-      imagesLoader.query = userRequest;
-      const obtainedImages = await imagesLoader.requestImages();
-
-      setImages([...images, ...obtainedImages.hits]);
-      setTotalImages(obtainedImages.total);
-      setStatus('resolved');
-    } catch (err) {
-      setError(err.message);
-      setPage(1);
-      setStatus('rejected');
-    }
-  };
+    (async () => {
+      try {
+        setStatus('pending');
+        imagesLoader.query = userRequest;
+        const obtainedImages = await imagesLoader.requestImages();
+        setImages([...images, ...obtainedImages.hits]);
+        setTotalImages(obtainedImages.total);
+        setStatus('resolved');
+      } catch (err) {
+        setError(err.message);
+        setPage(1);
+        setStatus('rejected');
+      }
+    })();
+  }, [images, userRequest, page]);
 
   const setUserInputToState = userInput => {
     if (userInput === '') {
@@ -52,17 +43,10 @@ export const App = () => {
         fontSize: '20px',
       });
     }
-
     imagesLoader.resetPage();
     setUserRequest(userInput);
     setImages([]);
     setPage(imagesLoader.page);
-    isRequestNew.current = true;
-  };
-
-  const showNextImages = () => {
-    setPage(imagesLoader.page);
-    isPageChanged.current = true;
   };
 
   return (
@@ -74,7 +58,7 @@ export const App = () => {
       {status === 'pending' && <Loader />}
 
       {status === 'resolved' && totalImages > images.length && (
-        <LoadMoreBtn onBtnClick={showNextImages} />
+        <LoadMoreBtn onBtnClick={() => setPage(imagesLoader.page)} />
       )}
 
       {status === 'rejected' && <h1>{error}</h1>}
